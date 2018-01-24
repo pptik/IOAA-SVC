@@ -37,7 +37,7 @@ database.connect(function (err, db) {
             res.status(err.status || 500);
             res.render('error');
         });
-        const port = normalizePort(process.env.PORT || '8012');
+        const port = normalizePort(process.env.PORT || '3033');
         app.set('port', port);
         const server = http.createServer(app);
         server.listen(port);
