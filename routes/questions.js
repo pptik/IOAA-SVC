@@ -3,7 +3,8 @@ let router = express.Router();
 let message = require('../setup/messages.json');
 let sessionModel=require('../model/session_model');
 let questionsModel=require('../model/questions_model');
-
+let cors = require('cors');
+app.use(cors());
 router.post('/create', async(req, res) => {
     let query = req.body;
     console.log(query);
@@ -41,7 +42,27 @@ router.post('/get/all', async(req, res) => {
             if(await sessionModel.promiseCheckSession(SessID)===null)res.status(200).send(message.invalid_session);
             else {
                 let listQuestion=await questionsModel.getAllQuestion();
-                res.status(200).send({success: false, message:"Success get questions", listQuestions:listQuestion });
+                res.status(200).send({success: true, message:"Success get questions", listQuestions:listQuestion });
+            }
+        }catch (err){
+            console.log(err);
+            res.status(200).send(message.server_error);
+        }
+    }
+});
+router.post('/delete/by/id', async(req, res) => {
+    let query = req.body;
+    console.log(query);
+    let SessID=query.SessID;
+    let QuestionID=query.QuestionID;
+    if(SessID===undefined||QuestionID===undefined){
+        res.status(200).send(message.parameter_not_completed);
+    }else {
+        try{
+            if(await sessionModel.promiseCheckSession(SessID)===null)res.status(200).send(message.invalid_session);
+            else {
+                await questionsModel.setQuestionsToExpired(QuestionID);
+                res.status(200).send({success: true, message:"Question Status Become Deleted" });
             }
         }catch (err){
             console.log(err);

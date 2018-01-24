@@ -4,7 +4,8 @@ let message = require('../setup/messages.json');
 let userModel=require('../model/users_model');
 let sessionModel=require('../model/session_model');
 bcrypt = app.bcrypt;
-
+let cors = require('cors');
+app.use(cors());
 router.post('/signin', async(req, res) => {
     let query = req.body;
     console.log(query);

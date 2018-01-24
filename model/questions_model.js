@@ -35,7 +35,6 @@ exports.checkQuestionByNumber=function (Number) {
       });
   });
 };
-
 exports.getAllQuestion=function () {
     return new Promise((resolve,reject)=>{
         questionsCollection.find({status:1}).toArray(function (err,results) {
@@ -43,4 +42,15 @@ exports.getAllQuestion=function () {
             else resolve(results);
         })
     })
+};
+exports.setQuestionsToExpired= (QuestionID) => {
+    return new Promise((resolve, reject)=>{
+        let questionUpdateQuery = {
+            status:2
+        };
+        questionsCollection.updateOne({_id:new ObjectId(QuestionID)},{$set:questionUpdateQuery},function (err,result) {
+            if (err)reject(err);
+            else resolve(true);
+        });
+    });
 };

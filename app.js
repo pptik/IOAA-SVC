@@ -101,11 +101,13 @@ database.connect(function (err, db) {
         let index = require('./routes/index');
         let users = require('./routes/users');
         let questions=require('./routes/questions');
+        let moderationSchedules=require('./routes/moderation_schedules');
+        let grades=require('./routes/grades');
         app.use('/', index);
         app.use('/api/users', users);
         app.use('/api/questions',questions);
-
-
+        app.use('/api/moderation/schedules',moderationSchedules);
+        app.use('/api/grades',grades);
 
         app.use(function(req, res, next) {
             let err = new Error('Not Found');
