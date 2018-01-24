@@ -2,9 +2,11 @@ let express = require('express');
 let router = express.Router();
 let message = require('../setup/messages.json');
 let sessionModel=require('../model/session_model');
-let gradesModel=require('../model/grades_model');
+let countriesModel=require('../model/countries_model');
 let cors = require('cors');
 app.use(cors());
+
+
 
 router.post('/get/all', async(req, res) => {
     let query = req.body;
@@ -16,11 +18,8 @@ router.post('/get/all', async(req, res) => {
         try{
             if(await sessionModel.promiseCheckSession(SessID)===null)res.status(200).send(message.invalid_session);
             else {
-                let listGrade=await gradesModel.getListAllGradesWithoutJoins();
-                for (let i=0; i<listGrade.length;i++){
-
-                }
-                res.status(200).send({success: true, message:"Success get Grades", listgrade:listGrade });
+                let ListCountry=await countriesModel.getAllCountry();
+                res.status(200).send({success: true, message: "Success Get Data",listcountry:ListCountry});
             }
         }catch (err){
             console.log(err);
@@ -28,19 +27,4 @@ router.post('/get/all', async(req, res) => {
         }
     }
 });
-
-router.post('/test', async(req, res) => {
-    let query = req.body;
-    console.log(query);
-
-        try{
-
-
-        }catch (err){
-            console.log(err);
-            res.status(200).send(message.server_error);
-        }
-
-});
-
 module.exports = router;
