@@ -103,12 +103,58 @@ router.post('/insert/translation', async(req, res) => {
         try{
             if(await sessionModel.promiseCheckSession(SessID)===null)res.status(200).send(message.invalid_session);
             else {
-                //check question by id with language and language code exists
                 if(await questionsModel.checkQuestionTranslateExistByQuestionIDLanguageAndLanguageCode(query)){
-
+                    await questionsModel.updateTranslatedQuestionByQuestionID(query);
                 }else {
-
+                    await questionsModel.insertTranslatedQuestionByQuestionID(query);
                 }
+                res.status(200).send({success: true, message:"Translated Question Added" });
+            }
+        }catch (err){
+            console.log(err);
+            res.status(200).send(message.server_error);
+        }
+    }
+});
+router.post('/add/jury', async(req, res) => {
+    let query = req.body;
+    console.log(query);
+    let SessID=query.SessID;
+    let QuestionID=query.QuestionID;
+    let JuryID=query.JuryID;
+    if(SessID===undefined||QuestionID===undefined||JuryID===undefined){
+        res.status(200).send(message.parameter_not_completed);
+    }else {
+        try{
+            if(await sessionModel.promiseCheckSession(SessID)===null)res.status(200).send(message.invalid_session);
+            else {
+                if(await questionsModel.checkIfJuryAlreadyAddedToQuestionByQuestionID(query)){
+                    res.status(200).send({success: true, message:"Jury already added to question"});
+                }else {
+                    await questionsModel.insertJuryToQuestionByQuestionID(query);
+                    res.status(200).send({success: true, message:"Success add jury to question" });
+                }
+            }
+        }catch (err){
+            console.log(err);
+            res.status(200).send(message.server_error);
+        }
+    }
+});
+router.post('/update/english', async(req, res) => {
+    let query = req.body;
+    console.log(query);
+    let SessID=query.SessID;
+    let QuestionID=query.QuestionID;
+    let EnglishQuestion=query.EnglishQuestion;
+    if(SessID===undefined||QuestionID===undefined||EnglishQuestion===undefined){
+        res.status(200).send(message.parameter_not_completed);
+    }else {
+        try{
+            if(await sessionModel.promiseCheckSession(SessID)===null)res.status(200).send(message.invalid_session);
+            else {
+                await questionsModel.updateOriginalQuestionByQuestionID(query);
+                res.status(200).send({success: true, message:"Success update Question" });
             }
         }catch (err){
             console.log(err);
