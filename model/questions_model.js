@@ -35,9 +35,17 @@ exports.checkQuestionByNumber=function (Number) {
       });
   });
 };
-exports.getAllQuestion=function () {
+exports.getAllActiveQuestion=function () {
     return new Promise((resolve,reject)=>{
         questionsCollection.find({status:1}).toArray(function (err,results) {
+            if(err)reject(err);
+            else resolve(results);
+        })
+    })
+};
+exports.getAllQuestion=function () {
+    return new Promise((resolve,reject)=>{
+        questionsCollection.find().toArray(function (err,results) {
             if(err)reject(err);
             else resolve(results);
         })
@@ -52,5 +60,39 @@ exports.setQuestionsToExpired= (QuestionID) => {
             if (err)reject(err);
             else resolve(true);
         });
+    });
+};
+
+exports.checkQuestionTranslateExistByQuestionIDLanguageAndLanguageCode=(query)=>{
+  return new Promise((resolve,reject)=>{
+      let findQuestionQuery={
+          _id:new ObjectId(query.QuestionID),
+          deskripsi:{
+              $elemMatch:{
+                  bahasa:query.Language,
+                  kode_bahasa:query.LanguageCode
+              }
+          }
+      };
+      questionsCollection.findOne(findQuestionQuery,function (err,result) {
+         if(err)reject(err);
+         else {
+             if(result.length>0)resolve(true);
+             else resolve(false);
+         }
+      });
+  });
+};
+exports.insertTranslatedQuestionByQuestionID=(query)=>{
+    return new Promise((resolve,reject)=>{
+        let pushQuestionQuery={
+            bahasa:query.Language,
+            kode_bahasa:(query.LanguageCode).toLowerCase(),
+            pertanyaan:query.Question
+        };
+        questionsCollection.updateOne({_id:new ObjectId(query.QuestionID)},{$push:{deskripsi:pushQuestionQuery}},function (err,result) {
+            if(err)reject(err);
+            else resolve(result);
+        })
     });
 };
