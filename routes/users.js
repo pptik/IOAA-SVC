@@ -96,7 +96,7 @@ router.post('/get/all', async(req, res) => {
         try{
             if(await sessionModel.promiseCheckSession(SessID)===null)res.status(200).send(message.invalid_session);
             else {
-                let ListUser=await userModel.getAllUser();
+                let ListUser=await userModel.getAllUsersWithCountry();
                 res.status(200).send({success: true, message: "Success Get Data",listuser:ListUser});
             }
         }catch (err){
@@ -125,5 +125,29 @@ router.post('/get/by/privilege', async(req, res) => {
         }
     }
 });
-
+router.post('/change/password', async(req, res) => {
+    let query = req.body;
+    console.log(query);
+    let SessID=query.SessID;
+    let UseriD=query.UserID;
+    let OldPassword=query.OldPassword;
+    let NewPassword=query.NewPassword;
+    if(SessID===undefined||UseriD===undefined||OldPassword===undefined||NewPassword===undefined){
+        res.status(200).send(message.parameter_not_completed);
+    }else {
+        try{
+            if(await sessionModel.promiseCheckSession(SessID)===null)res.status(200).send(message.invalid_session);
+            else {
+                let UserData=await userModel.FindUserByID(UseriD);
+                if(bcrypt.compareSync(OldPassword,UserData.password)){
+                    await userModel.updatePasswordUserByID(query);
+                    res.status(200).send({success: true, message: "Berhasil Mengubah Password"});
+                }else res.status(200).send(message.invalid_old_password);
+            }
+        }catch (err){
+            console.log(err);
+            res.status(200).send(message.server_error);
+        }
+    }
+});
 module.exports = router;

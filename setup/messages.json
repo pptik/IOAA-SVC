@@ -46,6 +46,10 @@
     "success": false,
     "message": "Password yang anda masukan salah"
   },
+  "invalid_old_password":{
+    "success": false,
+    "message": "Invalid Old Password"
+  },
   "account_not_approved":{
     "success": false,
     "message": "Akun anda belum di Approve Admin, silahkan hubungi admin Privatq"
