@@ -141,6 +141,27 @@ router.post('/add/jury', async(req, res) => {
         }
     }
 });
+router.post('/remove/jury', async(req, res) => {
+    let query = req.body;
+    console.log(query);
+    let SessID=query.SessID;
+    let QuestionID=query.QuestionID;
+    let JuryID=query.JuryID;
+    if(SessID===undefined||QuestionID===undefined||JuryID===undefined){
+        res.status(200).send(message.parameter_not_completed);
+    }else {
+        try{
+            if(await sessionModel.promiseCheckSession(SessID)===null)res.status(200).send(message.invalid_session);
+            else {
+                await questionsModel.removeJuryFromQuestionByQuestionID(query);
+                res.status(200).send({success: true, message:"Success remove jury from question" });
+            }
+        }catch (err){
+            console.log(err);
+            res.status(200).send(message.server_error);
+        }
+    }
+});
 router.post('/update/english', async(req, res) => {
     let query = req.body;
     console.log(query);

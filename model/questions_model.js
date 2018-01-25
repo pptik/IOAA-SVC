@@ -138,6 +138,19 @@ exports.insertJuryToQuestionByQuestionID=(query)=>{
         })
     });
 };
+exports.removeJuryFromQuestionByQuestionID=(query)=>{
+    return new Promise((resolve,reject)=>{
+        questionsCollection.updateOne({_id:new ObjectId(query.QuestionID)},
+            {$pull:
+                {
+                    juri:new ObjectId(query.JuryID)
+                }
+            },function (err,result) {
+            if(err)reject(err);
+            else resolve(result);
+        })
+    });
+};
 exports.updateOriginalQuestionByQuestionID=(query)=>{
     return new Promise((resolve,reject)=>{
         questionsCollection.updateOne(
