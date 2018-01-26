@@ -169,3 +169,75 @@ exports.updateOriginalQuestionByQuestionID=(query)=>{
             })
     });
 };
+exports.checkParticipantAnswerByQuestionID=(query)=>{
+    return new Promise((resolve,reject)=>{
+        questionsCollection.aggregate([
+            {$match:
+                {
+                    _id:new ObjectId(query.QuestionID),
+                    "jawaban.participant":new ObjectId(query.ParticipantID)
+                }
+            },
+            {
+              $project:
+                  {
+                      jawaban:
+                          {
+                              $filter:
+                                  {
+                                      input:"$jawaban",
+                                      as:"jawaban",
+                                      cond:
+                                          {
+                                              $eq:["$$jawaban.participant",new ObjectId(query.ParticipantID)]
+                                          }
+                                  }
+                          },
+                      _id:0
+                  }
+            },{$unwind:"$jawaban"}
+        ],function (err,results) {
+            if(err)reject(err);
+            else {
+                if(results.length>0){
+                    resolve(results[0]);
+                }else {
+                    resolve(false);
+                }
+            }
+        })
+    });
+};
+
+exports.insertNewParticipantAnswerToQuestion=(query)=>{
+    return new Promise((resolve,reject)=>{
+        let pushAnswerQuery={
+            participant:new ObjectId(query.ParticipantID),
+            jawaban_participant:query.ParticipantAnswer,
+            count:1
+        };
+        questionsCollection.updateOne({_id:new ObjectId(query.QuestionID)},{$push: {jawaban:pushAnswerQuery}},function (err,result) {
+            if(err)reject(err);
+            else resolve(result);
+        })
+    });
+};
+exports.updateParticipantAnswerByQuestionID=(query,count)=>{
+    return new Promise((resolve,reject)=>{
+        questionsCollection.updateOne(
+            {
+                _id:new ObjectId(query.QuestionID),
+                "jawaban.participant":new ObjectId(query.ParticipantID)
+            },
+            {
+                $set:{
+                    "jawaban.$.jawaban_participant":query.ParticipantAnswer,
+                    "jawaban.$.count":count+1
+                }
+            }
+            ,function (err,result) {
+                if(err)reject(err);
+                else resolve(result);
+            })
+    });
+};

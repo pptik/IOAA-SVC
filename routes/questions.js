@@ -5,6 +5,8 @@ let sessionModel=require('../model/session_model');
 let questionsModel=require('../model/questions_model');
 let cors = require('cors');
 app.use(cors());
+
+let maxAnswer=2;
 router.post('/create', async(req, res) => {
     let query = req.body;
     console.log(query);
@@ -176,6 +178,40 @@ router.post('/update/english', async(req, res) => {
             else {
                 await questionsModel.updateOriginalQuestionByQuestionID(query);
                 res.status(200).send({success: true, message:"Success update Question" });
+            }
+        }catch (err){
+            console.log(err);
+            res.status(200).send(message.server_error);
+        }
+    }
+});
+router.post('/add/answer', async(req, res) => {
+    let query = req.body;
+    console.log(query);
+    let SessID=query.SessID;
+    let QuestionID=query.QuestionID;
+    let ParticipantID=query.ParticipantID;
+    let ParticipantAnswer=query.ParticipantAnswer;
+    if(SessID===undefined||QuestionID===undefined||ParticipantID===undefined||ParticipantAnswer===undefined){
+        res.status(200).send(message.parameter_not_completed);
+    }else {
+        try{
+            if(await sessionModel.promiseCheckSession(SessID)===null)res.status(200).send(message.invalid_session);
+            else {
+                let ParticipantAnswer= await questionsModel.checkParticipantAnswerByQuestionID(query);
+                console.log(ParticipantAnswer);
+                if(ParticipantAnswer){
+                    if(ParticipantAnswer.jawaban.count>=maxAnswer){
+                        res.status(200).send({success: false, message:"Cant Submit Answer, you already submitted "+maxAnswer+" Answer" });
+                    }else {
+                        await questionsModel.updateParticipantAnswerByQuestionID(query,ParticipantAnswer.jawaban.count);
+                        let NewAnswerCount=ParticipantAnswer.jawaban.count+1;
+                        res.status(200).send({success: true, message:"Answer updated, you already answer "+NewAnswerCount+" Times" });
+                    }
+                }else {
+                    await questionsModel.insertNewParticipantAnswerToQuestion(query);
+                    res.status(200).send({success: true, message:"New Answer Added, Participant can only answer "+maxAnswer+" times" });
+                }
             }
         }catch (err){
             console.log(err);
