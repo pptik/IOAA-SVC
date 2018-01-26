@@ -38,3 +38,36 @@ exports.checkCountryExistsByCode=function (CountryCode) {
         });
     });
 };
+exports.updateCountryByCountryID=(query)=>{
+    return new Promise((resolve,reject)=>{
+        countriesCollection.updateOne(
+            {
+                _id:new ObjectId(query.CountryID)
+            },
+            {
+                $set:{
+                    nama:query.Name,
+                    kode_negara:(query.CountryCode).toUpperCase(),
+                    bahasa:query.Language,
+                    kode_bahasa:(query.LanguageCode).toLowerCase(),
+                    jenis:query.Type
+                }
+            }
+            ,function (err,result) {
+                if(err)reject(err);
+                else resolve(result);
+            })
+    });
+};
+exports.getCountryByID=(query)=>{
+    return new Promise((resolve,reject)=>{
+        countriesCollection.findOne(
+            {
+                _id:new ObjectId(query.CountryID)
+            }
+            ,function (err,result) {
+                if(err)reject(err);
+                else resolve(result);
+            })
+    });
+};
