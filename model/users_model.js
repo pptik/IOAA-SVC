@@ -115,6 +115,44 @@ exports.getAllUsersWithCountry=()=> {
         });
     });
 };
-
-
-
+exports.updateUserByUserID=(query)=>{
+    return new Promise((resolve,reject)=>{
+        usersCollection.updateOne(
+            {
+                _id:new ObjectId(query.UserID)
+            },
+            {
+                $set:{
+                    name:query.Name,
+                    id_country:new ObjectId(query.CountryID),
+                    code:query.Code,
+                    password:bcrypt.hashSync(query.Code, salt),
+                    gender:query.Gender,
+                    salutation:query.Salutation,
+                    email:query.Email,
+                    birthday:query.BirthDay,
+                    no_passport:query.PassportID,
+                    passport_expired:query.PassportExpiredDate,
+                    reg:query.Reg,
+                    status:query.Status,
+                    visa_letter:query.VisaLetter,
+                    received:query.Received,
+                    visa_status:query.VisaStatus,
+                    tl:query.TL,
+                    st:query.ST,
+                    ob:query.OB,
+                    photo:query.Photo,
+                    shirt_size:query.ShirtSize,
+                    religion:query.Religion,
+                    civil_status:query.CivilStatus,
+                    diet_preference:query.DietPreference,
+                    note:query.Note,
+                    privilege:parseInt(query.Privilege)
+                }
+            }
+            ,function (err,result) {
+                if(err)reject(err);
+                else resolve(result);
+            })
+    });
+};

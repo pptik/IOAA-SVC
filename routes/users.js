@@ -150,4 +150,76 @@ router.post('/change/password', async(req, res) => {
         }
     }
 });
+
+router.post('/update', async(req, res) => {
+    let query = req.body;
+    console.log(query);
+    let SessID=query.SessID;
+    let Name=query.Name;
+    let UserID=query.UserID;
+    let CountryID=query.CountryID;
+    let Code=query.Code;
+    let Gender=query.Gender;
+    let Salutation=query.Salutation;
+    let Email=query.Email;
+    let BirthDay=query.BirthDay;
+    let Privilege=query.Privilege;
+    let PassportID=query.PassportID;
+    let PassportExpiredDate=query.PassportExpiredDate;
+    let Reg=query.Reg;
+    let Status=query.Status;
+    let VisaLetter=query.VisaLetter;
+    let Received=query.Received;
+    let VisaStatus=query.VisaStatus;
+    let TL=query.TL;
+    let ST=query.ST;
+    let OB=query.OB;
+    let Photo=query.Photo;
+    let ShirtSize=query.ShirtSize;
+    let Religion=query.Religion;
+    let CivilStatus=query.CivilStatus;
+    let DietPreferencec=query.DietPreference;
+    let Note=query.Note;
+    if(UserID===undefined|| Privilege===undefined|| BirthDay===undefined|| Email===undefined|| Salutation===undefined||
+        Gender===undefined|| Code===undefined|| CountryID===undefined|| SessID===undefined||Name===undefined||
+        PassportID===undefined||PassportExpiredDate===undefined||Reg===undefined||Status===undefined||
+        VisaLetter===undefined||Received===undefined||VisaStatus===undefined||TL===undefined||ST===undefined||
+        OB===undefined||Photo===undefined||ShirtSize===undefined||Religion===undefined||CivilStatus===undefined||
+        DietPreferencec===undefined||Note===undefined
+    ){
+        res.status(200).send(message.parameter_not_completed);
+    }else {
+        try{
+            if(await sessionModel.promiseCheckSession(SessID)===null)res.status(200).send(message.invalid_session);
+            else {
+                await userModel.updateUserByUserID(query);
+                res.status(200).send({success: true, message: "Success Update User"});
+            }
+        }catch (err){
+            console.log(err);
+            res.status(200).send(message.server_error);
+        }
+    }
+});
+
+router.post('/get/by/id', async(req, res) => {
+    let query = req.body;
+    console.log(query);
+    let SessID=query.SessID;
+    let UserID=query.UserID;
+    if(UserID===undefined||SessID===undefined){
+        res.status(200).send(message.parameter_not_completed);
+    }else {
+        try{
+            if(await sessionModel.promiseCheckSession(SessID)===null)res.status(200).send(message.invalid_session);
+            else {
+                let UserDetail=await userModel.FindUserByID(UserID);
+                res.status(200).send({success: true, message: "Success",userdetail:UserDetail});
+            }
+        }catch (err){
+            console.log(err);
+            res.status(200).send(message.server_error);
+        }
+    }
+});
 module.exports = router;
