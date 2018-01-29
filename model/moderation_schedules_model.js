@@ -36,6 +36,30 @@ exports.createModerationSchedule = function(query) {
         });
     });
 };
+exports.createModerationScheduleV2 = function(query) {
+    return new Promise((resolve, reject) =>{
+        let tanggalMulai=query.StartDate;
+        let jamMulai=query.JamMulai;
+        let tanggalSelesai=query.EndDate;
+        let jamSelesai=query.JamSelesai;
+        let waktuMulai=moment(tanggalMulai+" "+jamMulai,dateFormat,'id');
+        let waktuSelesai=moment(tanggalSelesai+" "+jamSelesai,dateFormat,'id');
+        let timeDifference=moment.duration(waktuSelesai.diff(waktuMulai));
+        let minuteDifference=timeDifference.asMinutes();
+        let moderationSessions=minuteDifference/parseInt(query.Durasi);
+        let moderationScheduleQuery={
+            start_time:waktuMulai.toDate(),
+            end_time:waktuSelesai.toDate(),
+            durasi:parseInt(query.Durasi),
+            status:1,
+            jumlah_sesi:moderationSessions
+        };
+        moderationSchedulesCollection.insertOne(moderationScheduleQuery, (err, result) => {
+            if(err) reject(err);
+            else resolve(result);
+        });
+    });
+};
 exports.checkActiveModerationSchedule=function () {
     return new Promise((resolve,reject)=>{
         moderationSchedulesCollection.find({status:1}).toArray(function (err,results) {

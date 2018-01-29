@@ -24,7 +24,7 @@ router.post('/create', async(req, res) => {
                 if(await moderationSchedulesModel.checkActiveModerationSchedule()){
                     res.status(200).send({success: false, message: "There is Active Moderation Schedules please check first and change the status to become expired"});
                 }else {
-                    await moderationSchedulesModel.createModerationSchedule(query);
+                    await moderationSchedulesModel.createModerationScheduleV2(query);
                     res.status(200).send({success: true, message: "Success Create Moderation Schedule"});
                 }
             }
@@ -116,4 +116,30 @@ router.post('/get/active', async(req, res) => {
         }
     }
 });
+router.post('/add/by/teamleader', async(req, res) => {
+    let query = req.body;
+    console.log(query);
+    let SessID=query.SessID;
+    let ModerationScheduleID=query.ModerationScheduleID;
+    let TeamLeaderID=query.TeamLeaderID;
+    let TeamLeaderCOde=query.TeamLeaderCode;
+    let JuryID=query.JuryID;
+    let JuryCode=query.JuryCode;
+    let ModerationSession=query.ModerationSession;
+    if(SessID===undefined){
+        res.status(200).send(message.parameter_not_completed);
+    }else {
+        try{
+            if(await sessionModel.promiseCheckSession(SessID)===null)res.status(200).send(message.invalid_session);
+            else {
+                let ActiveModerationSchedule=await moderationSchedulesModel.getActiveModerationSchedule();
+                res.status(200).send({success: true, message: "Success Get Data",schedule:ActiveModerationSchedule});
+            }
+        }catch (err){
+            console.log(err);
+            res.status(200).send(message.server_error);
+        }
+    }
+});
+
 module.exports = router;

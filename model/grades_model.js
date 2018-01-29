@@ -88,6 +88,8 @@ exports.createGrades = function(query) {
         let gradeInsertQuery={
             id_soal:new ObjectId(query.QuestionID),
             id_participant:new ObjectId(query.ParticipantID),
+            kode_participant:query.ParticipantCode,
+            nomor_soal:parseInt(query.QuestionNumber),
             nilai_juri:[],
             nilai_team_leader:{},
             selisih:0,
@@ -124,6 +126,7 @@ exports.insertJuryGradesbyQuestionIDandParticipantID=(query)=>{
     return new Promise((resolve,reject)=>{
         let pushGradeQuery={
             id_juri:new ObjectId(query.JuryID),
+            kode_juri:query.JuryCode,
             nilai:parseInt(query.Grades)
         };
         gradesCollection.updateOne({id_soal:new ObjectId(query.QuestionID),id_participant:new ObjectId(query.ParticipantID)},{$push:{nilai_juri:pushGradeQuery}},function (err,result) {
@@ -190,6 +193,7 @@ exports.updateGradesByTeamLeader=(query)=>{
             {
                 $set:{
                     "nilai_team_leader.id_team_leader":new ObjectId(query.TeamLeaderID),
+                    "nilai_team_leader.kode_team_leader":query.TeamLeaderCode,
                     "nilai_team_leader.nilai":parseInt(query.Grades)
                 }
             }
@@ -197,5 +201,39 @@ exports.updateGradesByTeamLeader=(query)=>{
                 if(err)reject(err);
                 else resolve(result);
             })
+    });
+};
+exports.getGradesByParticipantID=function (ParticipantID) {
+    return new Promise((resolve,reject)=>{
+        gradesCollection.aggregate([
+            {$match:
+                {
+                    id_participant:new ObjectId(ParticipantID)
+                }
+            },
+            {
+                $lookup:{
+                    from:"questions",
+                    localField:"id_soal",
+                    foreignField:"_id",
+                    as:"question_detail"
+                }
+            },
+            {$unwind:"$question_detail"},
+            {
+                $project:{
+                    id_participant:1,
+                    soal:{$arrayElemAt:["$question_detail.deskripsi",0]},
+                    nilai_juri:1,
+                    nilai_team_leader:1,
+                    selisih:1,
+                    moderasi_status:1,
+                    nilai_final:1
+                }
+            }
+        ]).toArray(function (err,results) {
+            if(err)reject(err);
+            else resolve(results);
+        });
     });
 };

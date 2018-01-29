@@ -12,9 +12,12 @@ router.post('/insert/by/teamleader', async(req, res) => {
     let SessID=query.SessID;
     let QuestionID=query.QuestionID;
     let ParticipantID=query.ParticipantID;
+    let ParticipantCode=query.ParticipantCode;
+    let QuestionNumber=query.QuestionNumber;
     let TeamLeaderID=query.TeamLeaderID;
+    let TeamLeaderCOde=query.TeamLeaderCode;
     let Grades=query.Grades;
-    if(SessID===undefined||QuestionID===undefined||ParticipantID===undefined||TeamLeaderID===undefined||Grades===undefined){
+    if(ParticipantCode===undefined||QuestionNumber===undefined||TeamLeaderCOde===undefined|| SessID===undefined||QuestionID===undefined||ParticipantID===undefined||TeamLeaderID===undefined||Grades===undefined){
         res.status(200).send(message.parameter_not_completed);
     }else {
         try{
@@ -74,9 +77,12 @@ router.post('/insert/by/jury', async(req, res) => {
     let SessID=query.SessID;
     let QuestionID=query.QuestionID;
     let ParticipantID=query.ParticipantID;
+    let ParticipantCode=query.ParticipantCode;
+    let QuestionNumber=query.QuestionNumber;
     let JuryID=query.JuryID;
     let Grades=query.Grades;
-    if(SessID===undefined||QuestionID===undefined||ParticipantID===undefined||JuryID===undefined||Grades===undefined){
+    let JuryCode=query.JuryCode;
+    if(SessID===undefined||ParticipantCode===undefined||QuestionNumber===undefined||JuryCode===undefined|| QuestionID===undefined||ParticipantID===undefined||JuryID===undefined||Grades===undefined){
         res.status(200).send(message.parameter_not_completed);
     }else {
         try{
@@ -155,7 +161,6 @@ router.post('/get/all', async(req, res) => {
         }
     }
 });
-
 router.post('/test', async(req, res) => {
     let query = req.body;
     console.log(query);
@@ -169,5 +174,27 @@ router.post('/test', async(req, res) => {
         }
 
 });
+router.post('/get/by/participant', async(req, res) => {
+    let query = req.body;
+    console.log(query);
+    let SessID=query.SessID;
+    let ParticipantID=query.ParticipantID;
+    if(SessID===undefined||ParticipantID===undefined){
+        res.status(200).send(message.parameter_not_completed);
+    }else {
+        try{
+            if(await sessionModel.promiseCheckSession(SessID)===null)res.status(200).send(message.invalid_session);
+            else {
+                let listGrade=await gradesModel.getGradesByParticipantID(ParticipantID);
+                for (let i=0; i<listGrade.length;i++){
 
+                }
+                res.status(200).send({success: true, message:"Success get Grades", listgrade:listGrade });
+            }
+        }catch (err){
+            console.log(err);
+            res.status(200).send(message.server_error);
+        }
+    }
+});
 module.exports = router;
