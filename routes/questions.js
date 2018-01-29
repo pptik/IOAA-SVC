@@ -91,6 +91,26 @@ router.post('/delete/by/id', async(req, res) => {
         }
     }
 });
+router.post('/get/by/id', async(req, res) => {
+    let query = req.body;
+    console.log(query);
+    let SessID=query.SessID;
+    let QuestionID=query.QuestionID;
+    if(SessID===undefined||QuestionID===undefined){
+        res.status(200).send(message.parameter_not_completed);
+    }else {
+        try{
+            if(await sessionModel.promiseCheckSession(SessID)===null)res.status(200).send(message.invalid_session);
+            else {
+                let detailQuestion=await questionsModel.findQuestionByID(QuestionID);
+                res.status(200).send({success: true, message:"Success Get Question", detailquestion:detailQuestion });
+            }
+        }catch (err){
+            console.log(err);
+            res.status(200).send(message.server_error);
+        }
+    }
+});
 router.post('/insert/translation', async(req, res) => {
     let query = req.body;
     console.log(query);

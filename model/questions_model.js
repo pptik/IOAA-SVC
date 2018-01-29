@@ -241,3 +241,12 @@ exports.updateParticipantAnswerByQuestionID=(query,count)=>{
             })
     });
 };
+
+exports.findQuestionByID= (QuestionID) => {
+    return new Promise((resolve, reject)=>{
+        questionsCollection.findOne({_id:new ObjectId(QuestionID)},function (err,result) {
+            if (err)reject(err);
+            else resolve(result);
+        });
+    });
+};
