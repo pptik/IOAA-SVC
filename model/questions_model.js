@@ -250,3 +250,11 @@ exports.findQuestionByID= (QuestionID) => {
         });
     });
 };
+exports.getQuestionByParticipantID= (ParticipantID) => {
+    return new Promise((resolve, reject)=>{
+        questionsCollection.find({"jawaban.participant":new ObjectId(ParticipantID),status:1}).toArray(function (err,result) {
+            if (err)reject(err);
+            else resolve(result);
+        });
+    });
+};
