@@ -68,3 +68,114 @@ exports.getListAllGradesWithoutJoins=function () {
         });
     });
 };
+exports.checkIfGradesWithQuestionIDandParticipantIDExists=(query)=>{
+    return new Promise((resolve,reject)=>{
+        let findQuestionQuery={
+            id_soal:new ObjectId(query.QuestionID),
+            id_participant:new ObjectId(query.ParticipantID)
+        };
+        gradesCollection.find(findQuestionQuery).toArray(function (err,result) {
+            if(err)reject(err);
+            else {
+                if(result.length>0)resolve(true);
+                else resolve(false);
+            }
+        })
+    });
+};
+exports.createGrades = function(query) {
+    return new Promise((resolve, reject) =>{
+        let gradeInsertQuery={
+            id_soal:new ObjectId(query.QuestionID),
+            id_participant:new ObjectId(query.ParticipantID),
+            nilai_juri:[],
+            nilai_team_leader:{},
+            selisih:0,
+            moderasi_status:0,
+            nilai_final:0
+        };
+        gradesCollection.insertOne(gradeInsertQuery, (err, result) => {
+            if(err) reject(err);
+            else resolve(result);
+        });
+    });
+};
+exports.checkIfJuryAlreadyGiveGradesByQuesionIDandParticipantID=(query)=>{
+    return new Promise((resolve,reject)=>{
+        let findGradesQuery={
+            id_soal:new ObjectId(query.QuestionID),
+            id_participant:new ObjectId(query.ParticipantID),
+            nilai_juri:{
+                $elemMatch:{
+                    id_juri:new ObjectId(query.JuryID)
+                }
+            }
+        };
+        gradesCollection.find(findGradesQuery).toArray(function (err,result) {
+            if(err)reject(err);
+            else {
+                if(result.length>0)resolve(true);
+                else resolve(false);
+            }
+        })
+    });
+};
+exports.insertJuryGradesbyQuestionIDandParticipantID=(query)=>{
+    return new Promise((resolve,reject)=>{
+        let pushGradeQuery={
+            id_juri:new ObjectId(query.JuryID),
+            nilai:parseInt(query.Grades)
+        };
+        gradesCollection.updateOne({id_soal:new ObjectId(query.QuestionID),id_participant:new ObjectId(query.ParticipantID)},{$push:{nilai_juri:pushGradeQuery}},function (err,result) {
+            if(err)reject(err);
+            else resolve(result);
+        })
+    });
+};
+exports.updateGradesByJury=(query)=>{
+    return new Promise((resolve,reject)=>{
+        gradesCollection.updateOne(
+            {
+                id_soal:new ObjectId(query.QuestionID),
+                id_participant:new ObjectId(query.ParticipantID),
+                "nilai_juri.id_juri":new ObjectId(query.JuryID)
+            },
+            {
+                $set:{
+                    "nilai_juri.$.nilai":parseInt(query.Grades)
+                }
+            }
+            ,function (err,result) {
+                if(err)reject(err);
+                else resolve(result);
+            })
+    });
+};
+exports.findGradeByQuestionIDandParticipantID= (query) => {
+    return new Promise((resolve, reject)=>{
+        gradesCollection.findOne({id_soal:new ObjectId(query.QuestionID),id_participant:new ObjectId(query.ParticipantID)},function (err,result) {
+            if (err)reject(err);
+            else resolve(result);
+        });
+    });
+};
+exports.updateSelisihModerasiStatusNilaiFinal=(query)=>{
+    return new Promise((resolve,reject)=>{
+        gradesCollection.updateOne(
+            {
+                id_soal:new ObjectId(query.QuestionID),
+                id_participant:new ObjectId(query.ParticipantID)
+            },
+            {
+                $set:{
+                    selisih:parseInt(query.Selisih),
+                    moderasi_status:parseInt(query.ModerationStatus),
+                    nilai_final:parseInt(query.FinalGrade)
+                }
+            }
+            ,function (err,result) {
+                if(err)reject(err);
+                else resolve(result);
+            })
+    });
+};
