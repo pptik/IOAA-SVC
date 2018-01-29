@@ -179,3 +179,23 @@ exports.updateSelisihModerasiStatusNilaiFinal=(query)=>{
             })
     });
 };
+
+exports.updateGradesByTeamLeader=(query)=>{
+    return new Promise((resolve,reject)=>{
+        gradesCollection.updateOne(
+            {
+                id_soal:new ObjectId(query.QuestionID),
+                id_participant:new ObjectId(query.ParticipantID)
+            },
+            {
+                $set:{
+                    "nilai_team_leader.id_team_leader":new ObjectId(query.TeamLeaderID),
+                    "nilai_team_leader.nilai":parseInt(query.Grades)
+                }
+            }
+            ,function (err,result) {
+                if(err)reject(err);
+                else resolve(result);
+            })
+    });
+};
