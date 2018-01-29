@@ -5,6 +5,7 @@ let moment 	= require('moment');
 let id = require('moment/locale/id');
 let dateFormat="DD/MM/YYYY H:m";
 let moderationSchedulesCollection=db.collection('moderation_schedules');
+let moderationListCollection=db.collection('moderation_list');
 
 exports.createModerationSchedule = function(query) {
     return new Promise((resolve, reject) =>{
@@ -101,11 +102,113 @@ exports.getListAllModerationSchedules=function () {
         });
     });
 };
+
+exports.getAllModerationandJoinWithListModeration=function () {
+    return new Promise((resolve,reject)=>{
+        moderationSchedulesCollection.aggregate([
+            {
+                $lookup:{
+                    from:"moderation_list",
+                    localField:"_id",
+                    foreignField:"id_jadwal_moderasi",
+                    as:"listModerasi"
+                }
+            }
+        ]).toArray(function (err,results) {
+            if(err)reject(err);
+            else resolve(results);
+        });
+    });
+};
 exports.getActiveModerationSchedule= () => {
     return new Promise((resolve, reject)=>{
-        moderationSchedulesCollection.findOne({status:1},function (err,result) {
+        moderationSchedulesCollection.aggregate([
+            {$match:
+                {
+                status:1
+                }
+            },
+            {
+                $lookup:{
+                    from:"moderation_list",
+                    localField:"_id",
+                    foreignField:"id_jadwal_moderasi",
+                    as:"listModerasi"
+                }
+            }
+        ],function (err,results) {
+            if(err)reject(err);
+            else resolve(results[0]);
+        });
+    });
+};
+exports.getModerationScheduleDetailByID= (query) => {
+    return new Promise((resolve, reject)=>{
+        moderationSchedulesCollection.findOne({_id:new ObjectId(query.ModerationScheduleID)},function (err,result) {
             if (err)reject(err);
             else resolve(result);
+        });
+    });
+};
+exports.getListModerationByIDandJury=function (query) {
+    return new Promise((resolve,reject)=>{
+        moderationListCollection.find({id_jadwal_moderasi:new ObjectId(query.ModerationScheduleID),id_juri:new ObjectId(query.JuryID)}).toArray(function (err,results) {
+            if(err)reject(err);
+            else resolve(results)
+        });
+    });
+};
+exports.getListModerationByIDandTeamLeader=function (query) {
+    return new Promise((resolve,reject)=>{
+        moderationListCollection.find({id_jadwal_moderasi:new ObjectId(query.ModerationScheduleID),id_team_leader:new ObjectId(query.TeamLeaderID)}).toArray(function (err,results) {
+            if(err)reject(err);
+            else resolve(results)
+        });
+    });
+};
+exports.checkJuryInListModerationScheduleByIDandSession=function (query) {
+    return new Promise((resolve,reject)=>{
+        moderationListCollection.find({id_jadwal_moderasi:new ObjectId(query.ModerationScheduleID),id_juri:new ObjectId(query.JuryID),sesike:parseInt(query.ModerationSession)}).toArray(function (err,results) {
+            if(err)reject(err);
+            else {
+                if(results.length>0)resolve(true);
+                else resolve(false);
+            }
+        });
+    });
+};
+exports.insertToModerationList = function(query) {
+    return new Promise((resolve, reject) =>{
+        let moderationListQuery={
+            id_jadwal_moderasi:new ObjectId(query.ModerationScheduleID),
+            id_team_leader:new ObjectId(query.TeamLeaderID),
+            kode_team_leader:query.TeamLeaderCode,
+            id_juri:new ObjectId(query.JuryID),
+            kode_juri:query.JuryCode,
+            sesike:parseInt(query.ModerationSession)
+        };
+        moderationListCollection.insertOne(moderationListQuery, (err, result) => {
+            if(err) reject(err);
+            else resolve(result);
+        });
+    });
+};
+exports.checkListModerasiByIDJuryAndSesi=function (query) {
+    return new Promise((resolve,reject)=>{
+        moderationListCollection.find({id_jadwal_moderasi:new ObjectId(query.ModerationScheduleID),id_juri:new ObjectId(query.JuryID),id_team_leader:new ObjectId(query.TeamLeaderID)}).toArray(function (err,results) {
+            if(err)reject(err);
+            else {
+                if(results.length>0)resolve(true);
+                else resolve(false);
+            }
+        });
+    });
+};
+exports.getModerationListByModerationScheduleID=function (query) {
+    return new Promise((resolve,reject)=>{
+        moderationListCollection.find({id_jadwal_moderasi:new ObjectId(query.ModerationScheduleID)}).toArray(function (err,results) {
+            if(err)reject(err);
+            else resolve(results)
         });
     });
 };
