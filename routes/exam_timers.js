@@ -56,5 +56,33 @@ router.post('/get', async(req, res) => {
         }
     }
 });
+router.post('/check', async(req, res) => {
+    let query = req.body;
+    console.log(query);
+    let SessID=query.SessID;
+    if(SessID===undefined){
+        res.status(200).send(message.parameter_not_completed);
+    }else {
+        try{
+            if(await sessionModel.promiseCheckSession(SessID)===null)res.status(200).send(message.invalid_session);
+            else {
+                let detailExamTimers=await examTimersModel.getExamTimers();
+                detailExamTimers.TanggalMulaiExam=moment(detailExamTimers.start_time).format('LL');
+                detailExamTimers.TanggalSelesaiExam=moment(detailExamTimers.end_time).format('LL');
+                detailExamTimers.WaktuMulaiExam=moment(detailExamTimers.start_time).format('LT');
+                detailExamTimers.WaktuSelesaiExam=moment(detailExamTimers.end_time).format('LT');
+                let dateBetweenTimeServer=moment(new Date());
+                if(dateBetweenTimeServer.isBetween(moment(detailExamTimers.start_time),moment(detailExamTimers.end_time))){
+                    res.status(200).send({success: true, message: "Exam Time",detailexamtimers:detailExamTimers});
+                }else {
+                    res.status(200).send({success: false, message: "Not Exam Time",detailexamtimers:detailExamTimers});
+                }
+            }
+        }catch (err){
+            console.log(err);
+            res.status(200).send(message.server_error);
+        }
+    }
+});
 
 module.exports = router;
