@@ -105,6 +105,7 @@ database.connect(function (err, db) {
         let grades=require('./routes/grades');
         let countries=require('./routes/countries');
         let examTimers=require('./routes/exam_timers');
+        let googleTranslator=require('./routes/google_translator');
         app.use('/', index);
         app.use('/api/users', users);
         app.use('/api/questions',questions);
@@ -112,6 +113,7 @@ database.connect(function (err, db) {
         app.use('/api/grades',grades);
         app.use('/api/countries',countries);
         app.use('/api/exam/timers',examTimers);
+        app.use('/api/g/translator',googleTranslator);
 
         app.use(function(req, res, next) {
             let err = new Error('Not Found');
