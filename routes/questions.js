@@ -111,6 +111,26 @@ router.post('/get/by/id', async(req, res) => {
         }
     }
 });
+router.post('/get/by/active/language/code', async(req, res) => {
+    let query = req.body;
+    console.log(query);
+    let SessID=query.SessID;
+    let LanguageCode=query.LanguageCode;
+    if(SessID===undefined||LanguageCode===undefined){
+        res.status(200).send(message.parameter_not_completed);
+    }else {
+        try{
+            if(await sessionModel.promiseCheckSession(SessID)===null)res.status(200).send(message.invalid_session);
+            else {
+                let questionList=await questionsModel.getQuestionByLanguageCode(query);
+                res.status(200).send({success: true, message:"Success Get Question", questionlist:questionList });
+            }
+        }catch (err){
+            console.log(err);
+            res.status(200).send(message.server_error);
+        }
+    }
+});
 router.post('/insert/translation', async(req, res) => {
     let query = req.body;
     console.log(query);

@@ -258,3 +258,37 @@ exports.getQuestionByParticipantID= (ParticipantID) => {
         });
     });
 };
+
+exports.getQuestionByLanguageCode=(query)=>{
+    return new Promise((resolve,reject)=>{
+        questionsCollection.aggregate([
+            {$match:
+                {
+                    "deskripsi.kode_bahasa":(query.LanguageCode).toLowerCase()
+                }
+            },
+            {
+                $project:
+                    {
+                        deskripsi:
+                            {
+                                $filter:
+                                    {
+                                        input:'$deskripsi',
+                                        as:'deskripsi' ,
+                                        cond:{
+                                            $eq:['$$deskripsi.kode_bahasa',(query.LanguageCode).toLowerCase()]
+                                        }
+                                    }
+                            },
+                        nomor:1,
+                        status:1,
+                        juri:1
+                    }
+            }
+        ],function (err,results) {
+            if(err)reject(err);
+            else resolve(results);
+        })
+    });
+};
